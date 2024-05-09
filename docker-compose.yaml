@@ -1,0 +1,96 @@
+version: "3.9"
+services:
+  mongo1:
+    container_name: mongo1
+    image: ${MONGO_IMG_NAME}
+    command: mongod --replSet mongo-replica-set --bind_ip localhost,mongo1
+    ports:
+      - "27017:27017"
+    networks:
+      - project-yolo5-mongo-net
+    volumes:
+      - mongo1-data:/data/db
+  mongo2:
+    container_name: mongo2
+    image: ${MONGO_IMG_NAME}
+    command: mongod --replSet mongo-replica-set --bind_ip localhost,mongo2
+    ports:
+      - "27018:27017"
+    networks:
+      - project-yolo5-mongo-net
+    volumes:
+      - mongo2-data:/data/db
+  mongo3:
+    container_name: mongo3
+    image: ${MONGO_IMG_NAME}
+    command: mongod --replSet mongo-replica-set --bind_ip localhost,mongo3
+    ports:
+      - "27019:27017"
+    networks:
+      - project-yolo5-mongo-net
+    volumes:
+      - mongo3-data:/data/db
+  mongo-init:
+    container_name: mongo-init
+    image: ${MONGO_IMG_NAME}
+    networks:
+      - project-yolo5-mongo-net
+    depends_on:
+      - mongo1
+      - mongo2
+      - mongo3
+    volumes:
+      - ./scripts:/scripts
+    restart: "no"
+    entrypoint: [ "bash", "/scripts/mongo_setup.sh" ]
+
+  yolo5:
+    container_name: yolo5
+    image: ${YOLO5_IMG_NAME}
+    networks:
+      - project-yolo5-mongo-net
+      - project-polybot-yolo5-net
+    ports:
+      - "8081:8081"
+    volumes:
+      - /home/maayan/.aws/credentials:/root/.aws/credentials
+    depends_on:
+      - mongo-init
+    env_file:
+      - .env
+    secrets:
+      - telegram_token
+    environment:
+      TELEGRAM_TOKEN: /run/secrets/telegram_token
+    command: >
+      /bin/bash -c "
+      sleep 10;
+      python3 app.py"
+
+  polybot:
+    container_name: polybot
+    image: ${POLYBOT_IMG_NAME}
+    networks:
+      - project-polybot-yolo5-net
+    ports:
+      - "8443:8443"
+    volumes:
+      - /home/maayan/.aws/credentials:/root/.aws/credentials
+    depends_on:
+      - yolo5
+    env_file:
+      - .env
+    secrets:
+      - telegram_token
+    environment:
+      TELEGRAM_TOKEN: /run/secrets/telegram_token
+secrets:
+   telegram_token:
+     file: telegram_bot_token
+networks:
+  project-polybot-yolo5-net: { }
+  project-yolo5-mongo-net: { }
+volumes:
+  mongo1-data:
+  mongo2-data:
+  mongo3-data:

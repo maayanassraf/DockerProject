@@ -3,8 +3,10 @@ from loguru import logger
 import os
 import time
 from telebot.types import InputFile
+import boto3
+import requests
 
-
+images_bucket = os.environ['BUCKET_NAME']
 class Bot:
 
     def __init__(self, token, telegram_chat_url):
@@ -71,7 +73,27 @@ class ObjectDetectionBot(Bot):
 
         if self.is_current_msg_photo(msg):
             photo_path = self.download_user_photo(msg)
-
+            print(photo_path)
             # TODO upload the photo to S3
+
+            s3_client = boto3.client('s3')
+            img_name = os.path.basename(photo_path)
+            s3_client.upload_file(
+                Bucket=f'{images_bucket}',
+                Key=f'images/{img_name}',
+                Filename=f'{photo_path}'
+            )
             # TODO send an HTTP request to the `yolo5` service for prediction
+            predict = requests.post(f'http://yolo5:8081/predict?imgName={img_name}')
             # TODO send the returned results to the Telegram end-user
+            data = predict.json()
+            objects = []
+            labels = data['labels']
+            for label in labels:
+                objects.append(label['class'])
+
+            counter = dict.fromkeys(objects, 0)
+            for val in objects:
+                counter[val] += 1
+            print(f'Detected Objects: \n{counter}')
+            self.send_text((msg['chat']['id']),text=f'Detected Objects: \n{counter}')
