@@ -29,10 +29,10 @@ jobs:
 
           IMAGE_NAME=project_polybot:${{ github.run_number }}
           echo $IMAGE_NAME
-          echo 019273956931.dkr.ecr.eu-west-2.amazonaws.com/${IMAGE_NAME}
+          echo 019273956931.dkr.ecr.eu-west-2.amazonaws.com/$IMAGE_NAME
           docker build -t $IMAGE_NAME .
-          docker tag $IMAGE_NAME "019273956931.dkr.ecr.eu-west-2.amazonaws.com/${IMAGE_MAME}"
-          docker push "019273956931.dkr.ecr.eu-west-2.amazonaws.com/${IMAGE_NAME}"
+          docker tag $IMAGE_NAME 019273956931.dkr.ecr.eu-west-2.amazonaws.com/$IMAGE_MAME
+          docker push 019273956931.dkr.ecr.eu-west-2.amazonaws.com/$IMAGE_NAME
 
   Yolo5Build:
     runs-on: ubuntu-latest
