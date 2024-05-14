@@ -28,12 +28,8 @@ jobs:
           # docker login -u ${{ secrets.DOCKER_REPO_USERNAME }} -p ${{ secrets.DOCKER_REPO_PASSWORD }}
 
           IMAGE_NAME=project_polybot:${{ github.run_number }}
-          echo $IMAGE_NAME
-          echo 019273956931.dkr.ecr.eu-west-2.amazonaws.com/$IMAGE_NAME
           docker build -t $IMAGE_NAME .
-          echo "docker tag $IMAGE_NAME 019273956931.dkr.ecr.eu-west-2.amazonaws.com/$IMAGE_MAME"
-          echo "docker push 019273956931.dkr.ecr.eu-west-2.amazonaws.com/$IMAGE_NAME"
-          docker tag $IMAGE_NAME 019273956931.dkr.ecr.eu-west-2.amazonaws.com/$IMAGE_MAME
+          docker tag $IMAGE_NAME 019273956931.dkr.ecr.eu-west-2.amazonaws.com/$IMAGE_NAME
           docker push 019273956931.dkr.ecr.eu-west-2.amazonaws.com/$IMAGE_NAME
 
   Yolo5Build:
@@ -54,8 +50,8 @@ jobs:
 
           IMAGE_NAME=project-yolo5:${{ github.run_number }}
           docker build -t $IMAGE_NAME .
-          docker tag $IMAGE_NAME 019273956931.dkr.ecr.eu-west-2.amazonaws.com/${IMAGE_NAME}
-          docker push $IMAGE_NAME 019273956931.dkr.ecr.eu-west-2.amazonaws.com/${IMAGE_NAME}
+          docker tag $IMAGE_NAME 019273956931.dkr.ecr.eu-west-2.amazonaws.com/$IMAGE_NAME
+          docker push $IMAGE_NAME 019273956931.dkr.ecr.eu-west-2.amazonaws.com/$IMAGE_NAME
 
   Deploy:
     name: Deploy Docker compose project
