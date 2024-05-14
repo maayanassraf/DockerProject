@@ -51,7 +51,7 @@ jobs:
           IMAGE_NAME=project-yolo5:${{ github.run_number }}
           docker build -t $IMAGE_NAME .
           docker tag $IMAGE_NAME 019273956931.dkr.ecr.eu-west-2.amazonaws.com/$IMAGE_NAME
-          docker push $IMAGE_NAME 019273956931.dkr.ecr.eu-west-2.amazonaws.com/$IMAGE_NAME
+          docker push 019273956931.dkr.ecr.eu-west-2.amazonaws.com/$IMAGE_NAME
 
   Deploy:
     name: Deploy Docker compose project
