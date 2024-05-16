@@ -88,8 +88,8 @@ jobs:
             # Generate .env file
             echo """
             MONGO_IMG_NAME=mongo:5
-            POLYBOT_IMG_NAME=project_polybot:${{ github.run_number }}
-            YOLO5_IMG_NAME=project-yolo5:${{ github.run_number }}
+            POLYBOT_IMG_NAME=019273956931.dkr.ecr.eu-west-2.amazonaws.com/project_polybot:${{ github.run_number }}
+            YOLO5_IMG_NAME=019273956931.dkr.ecr.eu-west-2.amazonaws.com/project-yolo5:${{ github.run_number }}
             TELEGRAM_APP_URL=$NGROK_DOMAIN
             BUCKET_NAME=maayana-dockerproject
             """ > .env
