@@ -100,7 +100,8 @@ jobs:
             # Reauthentication to thr ECR
             aws ecr get-login-password --region eu-west-2 | docker login --username AWS --password-stdin 019273956931.dkr.ecr.eu-west-2.amazonaws.com
             
-            docker rm mongo1 mongo2 mongo3
+            sleep 29
+            docker ps
             
             # Take it up with the current updated values
             docker compose up -d
