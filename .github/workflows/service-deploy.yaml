@@ -93,6 +93,8 @@ jobs:
             TELEGRAM_APP_URL=$NGROK_DOMAIN
             BUCKET_NAME=maayana-dockerproject
             """ > .env
+            # Reauthentication to thr ECR
+            aws ecr get-login-password --region eu-west-2 | docker login --username AWS --password-stdin 019273956931.dkr.ecr.eu-west-2.amazonaws.com
             
             # Take the service down
             docker compose down
