@@ -52,10 +52,16 @@ services:
       - project-polybot-yolo5-net
     ports:
       - "8081:8081"
+    volumes:
+      - /home/maayan/.aws/credentials:/root/.aws/credentials
     depends_on:
       - mongo-init
     env_file:
       - .env
+    secrets:
+      - telegram_token
+    environment:
+      TELEGRAM_TOKEN: /run/secrets/telegram_token
     command: >
       /bin/bash -c "
       sleep 10;
@@ -68,6 +74,8 @@ services:
       - project-polybot-yolo5-net
     ports:
       - "8443:8443"
+    volumes:
+      - /home/maayan/.aws/credentials:/root/.aws/credentials
     depends_on:
       - yolo5
     env_file:
@@ -78,7 +86,7 @@ services:
       TELEGRAM_TOKEN: /run/secrets/telegram_token
 secrets:
    telegram_token:
-     file: telegram_bot_token.secret
+     file: telegram_bot_token
 networks:
   project-polybot-yolo5-net: { }
   project-yolo5-mongo-net: { }
@@ -86,4 +94,3 @@ volumes:
   mongo1-data:
   mongo2-data:
   mongo3-data:
-
