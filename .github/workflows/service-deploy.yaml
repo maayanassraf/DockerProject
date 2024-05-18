@@ -100,7 +100,10 @@ jobs:
             # Reauthentication to thr ECR
             aws ecr get-login-password --region eu-west-2 | docker login --username AWS --password-stdin 019273956931.dkr.ecr.eu-west-2.amazonaws.com
             
-            sleep 100
+            docker volume rm polybotservice_mongo1-data
+            docker volume rm polybotservice_mongo2-data
+            docker volume rm polybotservice_mongo3-data
+
             docker ps
             
             # Take it up with the current updated values
