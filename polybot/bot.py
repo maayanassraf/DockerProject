@@ -3,6 +3,7 @@ from loguru import logger
 import os
 import time
 from telebot.types import InputFile
+from polybot.img_proc import Img
 import boto3
 import requests
 
@@ -67,33 +68,109 @@ class Bot:
         self.send_text(msg['chat']['id'], f'Your original message: {msg["text"]}')
 
 
-class ObjectDetectionBot(Bot):
+class ImageProcessingBot(Bot):
+    def __init__(self, token, telegram_chat_url):
+        super().__init__(token, telegram_chat_url)
+        self.media_group = []
+
     def handle_message(self, msg):
         logger.info(f'Incoming message: {msg}')
-
         if self.is_current_msg_photo(msg):
-            photo_path = self.download_user_photo(msg)
-            print(photo_path)
-            # TODO upload the photo to S3
+            try:
+                is_concat = False
+                # checks if 2 photos had sent
+                if msg["media_group_id"]:
+                    self.media_group.append(msg)
+                if len(self.media_group) == 2:
+                    # checks if one of the photos had the caption concat
+                    if self.media_group[0]["caption"] == "concat" or self.media_group[1]["caption"] == "concat":
+                        path_to_image1 = self.download_user_photo(self.media_group[0])
+                        image1 = Img(path_to_image1)
+                        path_to_image2 = self.download_user_photo(self.media_group[1])
+                        image2 = Img(path_to_image2)
+                        image1.concat(image2)
+                        path_to_filtered = image1.save_img()
+                        self.send_photo(msg['chat']['id'], path_to_filtered)
+                        self.media_group = []
+                return
+            except:
+                try:
+                    # check if the photo has caption
+                    photo_filter = msg["caption"]
+                    photo_filter = photo_filter.lower()
+                except:
+                    # apply detection if no filter had mentioned
+                    photo_path = self.download_user_photo(msg)
 
-            s3_client = boto3.client('s3')
-            img_name = os.path.basename(photo_path)
-            s3_client.upload_file(
-                Bucket=f'{images_bucket}',
-                Key=f'images/{img_name}',
-                Filename=f'{photo_path}'
-            )
-            # TODO send an HTTP request to the `yolo5` service for prediction
-            predict = requests.post(f'http://yolo5:8081/predict?imgName={img_name}')
-            # TODO send the returned results to the Telegram end-user
-            data = predict.json()
-            objects = []
-            labels = data['labels']
-            for label in labels:
-                objects.append(label['class'])
+                    # upload the downloaded photo to S3
+                    s3_client = boto3.client('s3')
+                    img_name = os.path.basename(photo_path)
+                    s3_client.upload_file(
+                        Bucket=f'{images_bucket}',
+                        Key=f'images/{img_name}',
+                        Filename=f'{photo_path}'
+                    )
 
-            counter = dict.fromkeys(objects, 0)
-            for val in objects:
-                counter[val] += 1
-            print(f'Detected Objects: \n{counter}')
-            self.send_text((msg['chat']['id']),text=f'Detected Objects: \n{counter}')
+                    # send an HTTP request to the `yolo5` service for prediction
+                    predict = requests.post(f'http://yolo5:8081/predict?imgName={img_name}')
+
+                    # send the returned results to the Telegram end-user
+                    data = predict.json()
+                    objects = []
+                    labels = data['labels']
+                    for label in labels:
+                        objects.append(label['class'])
+
+                    counter = dict.fromkeys(objects, 0)
+                    for val in objects:
+                        counter[val] += 1
+                    print(f'Detected Objects: \n{counter}')
+                    self.send_text((msg['chat']['id']), text=f'Detected Objects: \n{counter}')
+                    return
+                try:
+                    # apply filter for image processing if filter mentioned
+                    path_to_image = self.download_user_photo(msg)
+                    image = Img(path_to_image)
+                    apply_filter = image.find_filter(photo_filter)
+                    if apply_filter is False:
+                        self.send_text((msg['chat']['id']), f'The filter you mentioned doesn\'t exist.')
+                        return
+                    path_to_filtered = image.save_img()
+                    self.send_photo((msg['chat']['id']), path_to_filtered)
+                except:
+                    self.send_text((msg['chat']['id']), f'Unknown error occurred, please try again')
+        else:
+            self.send_text((msg['chat']['id']), f'for filtering photo, please send a photo.')
+
+
+# class ObjectDetectionBot(Bot):
+#     def handle_message(self, msg):
+#         logger.info(f'Incoming message: {msg}')
+#
+#         if self.is_current_msg_photo(msg):
+#             photo_path = self.download_user_photo(msg)
+#
+#             # upload the downloaded photo to S3
+#             s3_client = boto3.client('s3')
+#             img_name = os.path.basename(photo_path)
+#             s3_client.upload_file(
+#                 Bucket=f'{images_bucket}',
+#                 Key=f'images/{img_name}',
+#                 Filename=f'{photo_path}'
+#             )
+#
+#             # send an HTTP request to the `yolo5` service for prediction
+#             predict = requests.post(f'http://yolo5:8081/predict?imgName={img_name}')
+#
+#             # send the returned results to the Telegram end-user
+#             data = predict.json()
+#             objects = []
+#             labels = data['labels']
+#             for label in labels:
+#                 objects.append(label['class'])
+#
+#             counter = dict.fromkeys(objects, 0)
+#             for val in objects:
+#                 counter[val] += 1
+#             print(f'Detected Objects: \n{counter}')
+#             self.send_text((msg['chat']['id']),text=f'Detected Objects: \n{counter}')
