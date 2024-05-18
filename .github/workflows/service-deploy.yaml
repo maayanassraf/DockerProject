@@ -6,7 +6,7 @@ on:
       - main
 
 env:
-  EC2_PUBLIC_IP: 16.171.1.133 # replace to your EC2 instance public IP
+  EC2_PUBLIC_IP: 16.171.20.8 # replace to your EC2 instance public IP
 
 jobs:
   PolybotBuild:
@@ -95,12 +95,12 @@ jobs:
             """ > .env
             
             # Take the service down
-            docker compose down --volumes
+            docker compose down
             
             # Reauthentication to thr ECR
             aws ecr get-login-password --region eu-west-2 | docker login --username AWS --password-stdin 019273956931.dkr.ecr.eu-west-2.amazonaws.com
             
-            sleep 29
+            sleep 100
             docker ps
             
             # Take it up with the current updated values
