@@ -100,9 +100,12 @@ jobs:
             # Reauthentication to thr ECR
             aws ecr get-login-password --region eu-west-2 | docker login --username AWS --password-stdin 019273956931.dkr.ecr.eu-west-2.amazonaws.com
             
-            docker volume rm polybotservice_mongo1-data
-            docker volume rm polybotservice_mongo2-data
-            docker volume rm polybotservice_mongo3-data
+            docker stop mongo1
+            docker rm mongo1
+            docker stop mongo2
+            docker rm mongo2
+            docker stop mongo3
+            docker rm mongo3
 
             docker ps
             
