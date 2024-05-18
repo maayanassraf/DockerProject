@@ -99,44 +99,47 @@ class ImageProcessingBot(Bot):
                     photo_filter = msg["caption"]
                     photo_filter = photo_filter.lower()
                 except:
-                    # apply detection if no filter had mentioned
-                    photo_path = self.download_user_photo(msg)
-
-                    # upload the downloaded photo to S3
-                    s3_client = boto3.client('s3')
-                    img_name = os.path.basename(photo_path)
-                    s3_client.upload_file(
-                        Bucket=f'{images_bucket}',
-                        Key=f'images/{img_name}',
-                        Filename=f'{photo_path}'
-                    )
-
-                    # send an HTTP request to the `yolo5` service for prediction
-                    predict = requests.post(f'http://yolo5:8081/predict?imgName={img_name}')
-
-                    # send the returned results to the Telegram end-user
-                    data = predict.json()
-                    objects = []
-                    labels = data['labels']
-                    for label in labels:
-                        objects.append(label['class'])
-
-                    counter = dict.fromkeys(objects, 0)
-                    for val in objects:
-                        counter[val] += 1
-                    print(f'Detected Objects: \n{counter}')
-                    self.send_text((msg['chat']['id']), text=f'Detected Objects: \n{counter}')
+                    self.send_text(msg['chat']['id'], f'You didn\'t mention filter to apply.')
                     return
                 try:
-                    # apply filter for image processing if filter mentioned
-                    path_to_image = self.download_user_photo(msg)
-                    image = Img(path_to_image)
-                    apply_filter = image.find_filter(photo_filter)
-                    if apply_filter is False:
-                        self.send_text((msg['chat']['id']), f'The filter you mentioned doesn\'t exist.')
-                        return
-                    path_to_filtered = image.save_img()
-                    self.send_photo((msg['chat']['id']), path_to_filtered)
+                    if photo_filter == 'detect':
+                        # apply detection if detect filter had mentioned
+                        photo_path = self.download_user_photo(msg)
+
+                        # upload the downloaded photo to S3
+                        s3_client = boto3.client('s3')
+                        img_name = os.path.basename(photo_path)
+                        s3_client.upload_file(
+                            Bucket=f'{images_bucket}',
+                            Key=f'images/{img_name}',
+                            Filename=f'{photo_path}'
+                        )
+
+                        # send an HTTP request to the `yolo5` service for prediction
+                        predict = requests.post(f'http://yolo5:8081/predict?imgName={img_name}')
+
+                        # send the returned results to the Telegram end-user
+                        data = predict.json()
+                        objects = []
+                        labels = data['labels']
+                        for label in labels:
+                            objects.append(label['class'])
+
+                        counter = dict.fromkeys(objects, 0)
+                        for val in objects:
+                            counter[val] += 1
+                        print(f'Detected Objects: \n{counter}')
+                        self.send_text((msg['chat']['id']), text=f'Detected Objects: \n{counter}')
+                    else:
+                        # apply filter for image processing if filter exists
+                        path_to_image = self.download_user_photo(msg)
+                        image = Img(path_to_image)
+                        apply_filter = image.find_filter(photo_filter)
+                        if apply_filter is False:
+                            self.send_text((msg['chat']['id']), f'The filter you mentioned doesn\'t exist.')
+                            return
+                        path_to_filtered = image.save_img()
+                        self.send_photo((msg['chat']['id']), path_to_filtered)
                 except:
                     self.send_text((msg['chat']['id']), f'Unknown error occurred, please try again')
         else:
