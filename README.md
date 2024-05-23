@@ -120,8 +120,7 @@ that implemented in the [python project](https://github.com/maayanassraf/ImagePr
 
 Here is an end-to-end example of how it may look like:
 
-<img src="https://alonitac.github.io/DevOpsTheHardWay/img/docker_project_polysample.jpg" width="30%">
-
+<img src="https://github.com/maayanassraf/DockerProject/blob/main/example.jpg" width="30%">
 
 ## Deployment
 
