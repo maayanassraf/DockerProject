@@ -1,7 +1,7 @@
 import flask
 from flask import request
 import os
-from bot import ObjectDetectionBot
+from bot import ImageProcessingBot
 
 app = flask.Flask(__name__)
 
@@ -25,6 +25,6 @@ def webhook():
 
 
 if __name__ == "__main__":
-    bot = ObjectDetectionBot(TELEGRAM_TOKEN, TELEGRAM_APP_URL)
+    bot = ImageProcessingBot(TELEGRAM_TOKEN, TELEGRAM_APP_URL)
 
     app.run(host='0.0.0.0', port=8443)

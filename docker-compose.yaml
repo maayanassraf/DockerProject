@@ -78,7 +78,7 @@ services:
       TELEGRAM_TOKEN: /run/secrets/telegram_token
 secrets:
    telegram_token:
-     file: telegram_bot_token.secret
+     file: telegram_bot_token
 networks:
   project-polybot-yolo5-net: { }
   project-yolo5-mongo-net: { }
